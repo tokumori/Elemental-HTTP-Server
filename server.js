@@ -29,7 +29,7 @@ var server = http.createServer(function (req, res) {
 </html>`;
       fs.writeFile(`${public + '/' + elemObj.elementName}.html`, elemPage, function (err) {
         if (err) throw err;
-        var responseBody = JSON.stringify({"success" : true});
+        var responseBody = JSON.stringify({success : true});
         res.writeHead(200, {
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(responseBody)
