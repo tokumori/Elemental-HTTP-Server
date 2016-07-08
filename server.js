@@ -6,6 +6,11 @@ var public = './public';
 var server = http.createServer(function (req, res) {
   var path = public + req.url;
   var method = req.method;
+  var pathErr = fs.readFileSync(public + '/404.html', 'utf-8');
+  var statusCode;
+  var responseHeader = {};
+  var responseBody;
+
   req.setEncoding('utf8');
 
   if (method === 'POST') {
@@ -27,33 +32,44 @@ var server = http.createServer(function (req, res) {
   <p><a href="/">back</a></p>
 </body>
 </html>`;
-      fs.writeFile(`${public + '/' + req.url}.html`, elemPage, function (err) {
-        if (err) throw err;
-        var responseBody = JSON.stringify({success : true});
-        res.writeHead(200, {
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(responseBody)
-        });
+      fs.stat(path + '.html', function (err, stats) {
+        if (err) {
+          fs.writeFile(`${public + '/' + req.url}.html`, elemPage, function (err) {
+            if (err) throw err;
+          });
+          statusCode = 200;
+          responseBody = JSON.stringify({success : true});
+          responseHeader = {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(responseBody)
+          };
+        } else {
+          statusCode = 400;
+          responseBody = 'Page already exists.';
+        }
+        res.writeHead(statusCode, responseHeader);
         res.write(responseBody);
         res.end();
       });
-  });
+    });
   }
+  if (method === 'GET') {
     if (path === (public + '/')) {
       path = public + '/index.html';
     }
-    // fs.readFile(path, 'utf-8', function (err, data) {
-    //   if (err) {
-    //     fs.readFile(public + '/404.html', 'utf-8', function (err, data) {
-    //       res.statusCode = 404;
-    //       res.write(data);
-    //       res.end();
-    //     });
-    //   } else {
-    //     res.write(data);
-    //     res.end();
-    //   }
-    // });
+    fs.readFile(path, 'utf-8', function (err, data) {
+      if (err) {
+        statusCode = 404;
+        responseBody = pathErr;
+      } else {
+        statusCode = 200;
+        responseBody = data;
+      }
+      res.writeHead(statusCode);
+      res.write(responseBody);
+      res.end();
+    });
+  }
 });
 
 server.listen(8080);
