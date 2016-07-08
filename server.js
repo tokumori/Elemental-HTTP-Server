@@ -8,11 +8,11 @@ var server = http.createServer(function (req, res) {
   var method = req.method;
   req.setEncoding('utf8');
 
-  if (req.url === '/elements') {
+  if (method === 'POST') {
     req.on('data', function (data) {
       var elemObj = querystring.parse(data);
       var elemPage =
-      `<!DOCTYPE html>\r
+      `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -27,7 +27,7 @@ var server = http.createServer(function (req, res) {
   <p><a href="/">back</a></p>
 </body>
 </html>`;
-      fs.writeFile(`${public + '/' + elemObj.elementName}.html`, elemPage, function (err) {
+      fs.writeFile(`${public + '/' + req.url}.html`, elemPage, function (err) {
         if (err) throw err;
         var responseBody = JSON.stringify({success : true});
         res.writeHead(200, {
@@ -39,21 +39,21 @@ var server = http.createServer(function (req, res) {
       });
   });
   }
-  if (path === (public + '/')) {
-    path = public + '/index.html';
-  }
-  // fs.readFile(path, 'utf-8', function (err, data) {
-  //   if (err) {
-  //     fs.readFile(public + '/404.html', 'utf-8', function (err, data) {
-  //       res.statusCode = 404;
-  //       res.write(data);
-  //       res.end();
-  //     });
-  //   } else {
-  //     res.write(data);
-  //     res.end();
-  //   }
-  // });
+    if (path === (public + '/')) {
+      path = public + '/index.html';
+    }
+    // fs.readFile(path, 'utf-8', function (err, data) {
+    //   if (err) {
+    //     fs.readFile(public + '/404.html', 'utf-8', function (err, data) {
+    //       res.statusCode = 404;
+    //       res.write(data);
+    //       res.end();
+    //     });
+    //   } else {
+    //     res.write(data);
+    //     res.end();
+    //   }
+    // });
 });
 
 server.listen(8080);
